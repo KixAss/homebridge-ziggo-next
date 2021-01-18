@@ -29,6 +29,8 @@ let currentChannel;
 let currentChannelId;
 let currentState;
 
+let maxResults = 50;
+
 const sessionRequestOptions = {
     method: 'POST',
     uri: sessionUrl,
@@ -175,7 +177,7 @@ ZiggoAccessory.prototype = {
 
 
   inputSourceServices() {
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < (this.config.channels ? this.config.channels.length : maxResults); i++) {
       const inputService = new Service.InputSource(i, `inputSource_${i}`);
 
       inputService
@@ -403,27 +405,35 @@ ZiggoAccessory.prototype = {
 		request({ url: channelsUrl, json: true}).then(availableInputs => {
           const sanitizedInputs = [];
 
-          let i = 0;
-		  availableInputs.channels.forEach(function (channel) {
-			  if (i < 50)
-			  {
-				  sanitizedInputs.push({id: channel.stationSchedules[0].station.serviceId, name: channel.title, index: i});
-			  }
-			  i++;
-		  });
-
-          this.inputs = sanitizedInputs;
-
-          this.inputs.forEach((input, i) => {
-            const inputService = this.inputServices[i];
-            inputService.getCharacteristic(Characteristic.ConfiguredName).updateValue( `${i < 9 ? `0${i + 1}` : i + 1}` + ". " + input.name);
-            inputService.getCharacteristic(Characteristic.IsConfigured).updateValue(Characteristic.IsConfigured.CONFIGURED);
-            inputService.getCharacteristic(Characteristic.CurrentVisibilityState).updateValue(Characteristic.CurrentVisibilityState.SHOWN);
+        if (this.config.channels) {
+          this.config.channels.forEach(function (selectedChannel) {
+            availableInputs.channels.forEach(function (channel) {
+              if (channel.channelNumber == selectedChannel) {
+                sanitizedInputs.push({id: channel.stationSchedules[0].station.serviceId, name: channel.title, index: channel.channelNumber});
+              }
+            });
           });
-        },
-        error => {
-          this.log(`Failed to get available inputs from ${this.config.name}. Please verify the AVR is connected and accessible at ${this.config.ip}`);
+        } else {
+          let i = 0;
+          availableInputs.channels.forEach(function (channel) {
+            if (i < maxResults) {
+              sanitizedInputs.push({id: channel.stationSchedules[0].station.serviceId, name: channel.title, index: channel.channelNumber});
+              i++;
+            }
+          });
         }
+        this.inputs = sanitizedInputs;
+  
+        this.inputs.forEach((input, i) => {
+          const inputService = this.inputServices[i];
+          inputService.getCharacteristic(Characteristic.ConfiguredName).updateValue(input.index + ". " + input.name);
+          inputService.getCharacteristic(Characteristic.IsConfigured).updateValue(Characteristic.IsConfigured.CONFIGURED);
+          inputService.getCharacteristic(Characteristic.CurrentVisibilityState).updateValue(Characteristic.CurrentVisibilityState.SHOWN);
+        });
+      },
+      error => {
+        this.log(`Failed to get available inputs from ${this.config.name}. Please verify the AVR is connected and accessible at ${this.config.ip}`);
+      }
       );
     }
   },
