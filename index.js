@@ -445,10 +445,11 @@ ZiggoAccessory.prototype = {
   },
 
   setPowerState(state, callback) {
-	this.log('Power on/off');
-	mqttClient.publish(mqttUsername + '/' + setopboxId, '{"id":"' + makeId(8) + '","type":"CPE.KeyEvent","source":"' + varClientId + '","status":{"w3cKey":"Power","eventType":"keyDownUp"}}');
-	currentState = (currentState ? false : true);
-
+    this.log('Power on/off');
+    if (state != currentState) {
+      mqttClient.publish(mqttUsername + '/' + setopboxId, '{"id":"' + makeId(8) + '","type":"CPE.KeyEvent","source":"' + varClientId + '","status":{"w3cKey":"Power","eventType":"keyDownUp"}}');
+      currentState = (currentState ? false : true);
+    }
     callback();
   },
 
