@@ -1,0 +1,78 @@
+{
+  "pluginAlias": "ZiggoNext",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "For more information and instructions on how to configure it [click here](https://github.com/KixAss/homebridge-ziggo-next/blob/master/README.md).",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "required": true,
+        "minLength": 1,
+        "default": "Ziggo Next"
+      },
+      "username": {
+        "title": "Username",
+        "type": "string",
+        "minLength": 1,
+        "required": true,
+        "description": "Your Ziggo username"
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "minLength": 1,
+        "required": true,
+        "description": "Your Ziggo password"
+      },
+      "channels": {
+        "type": "array",
+        "items": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 999
+        }
+      }
+    }
+  },
+  "layout": [
+    "name",
+    {
+      "type": "flex",
+      "flex-flow": "row wrap",
+      "items": [
+        "username",
+        {
+          "key": "password",
+          "type": "password"
+        }
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Channels",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        {
+            "type": "help",
+            "helpvalue": "This option is optional. You can add your favorite channels e.g. NPO 1, NPO 2 and RTL 4 (1,2,4). If left empty, you'll get the default 50 first channels."
+        },
+        {
+          "key": "channels",
+          "type": "array",
+          "notitle": true,
+          "items": [
+            {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 999
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
